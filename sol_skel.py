@@ -38,17 +38,21 @@ class Monitor():
         self.cars_south.value -= 1
         self.mutex.release()
         
+    def empty_direction_north(self):
+        return self.cars_north.value == 0
+        
+    def empty_direction_south(self):
+        return self.cars_south.value == 0
+    
     def wants_enter(self, direction):
         self.mutex.acquire()
         if direction == NORTH:
-            self.stop.wait(self.cars_south.value == 0)
+            self.stop.wait_for(self.empty_direction_north)
             #self.going_north()
-            print("p")
             self.cars_north.value += 1
         elif direction == SOUTH:
-            self.stop.wait(self.cars_north.value == 0)
+            self.stop.wait_for(self.empty_direction_south)
             #self.going_south()
-            print("q")
             self.cars_south.value += 1
         self.mutex.release()
             
@@ -56,11 +60,13 @@ class Monitor():
         self.mutex.acquire()
         #print(self.cars_north.value, self.cars_south.value)
         if direction == NORTH: 
-            self.exiting_north()
-            self.stop.notify()
+            #self.exiting_north()
+            self.cars_north.value -= 1
+            self.stop.notify_all()
         elif direction == SOUTH:
-            self.exiting_south()
-            self.stop.notify()
+            #self.exiting_south()
+            self.cars_south.value -= 1
+            self.stop.notify_all()
         self.mutex.release()
         
         
@@ -68,15 +74,15 @@ def delay(n=3):
     time.sleep(random.random()*n)
 
 def car(cid, direction, monitor):
-    print(f"car {cid} direction {direction} created")
+    print(f"car {cid} direction {direction} created", flush = True)
     delay(6)
-    print(f"car {cid} heading {direction} wants to enter")
+    print(f"car {cid} heading {direction} wants to enter", flush = True)
     monitor.wants_enter(direction)
-    print(f"car {cid} heading {direction} enters the tunnel")
+    print(f"car {cid} heading {direction} enters the tunnel", flush = True)
     delay(3)
-    print(f"car {cid} heading {direction} leaving the tunnel")
+    print(f"car {cid} heading {direction} leaving the tunnel", flush = True)
     monitor.leaves_tunnel(direction)
-    print(f"car {cid} heading {direction} out of the tunnel")
+    print(f"car {cid} heading {direction} out of the tunnel", flush = True)
 
 
 
