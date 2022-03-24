@@ -10,8 +10,8 @@ import random
 from multiprocessing import Lock, Condition, Process
 from multiprocessing import Value
 
-SOUTH = "north"
-NORTH = "south"
+NORTH = "north"
+SOUTH = "south"
 
 NCARS = 10
 
@@ -23,11 +23,68 @@ class Tunnel():
         self.cars_north = Value('i', 0)
         self.cars_south = Value('i', 0)
         self.mutex = Lock()
+        self.stop = Condition(mutex)
         
-    def waiting_in_north(self):
-        return self.cars_north.value == 0
+    def going_north(self):
+        self.mutex.acquire()
+        self.cars_north.value += 1
+        self.mutex.release()
     
-    def waiting_in_south(self):
-        return self.cars_south.value == 0
-
-    def 
+    def exiting_north(self):
+        self.mutex.acquire()
+        self.cars_north.value -= 1
+        self.mutex.release()
+    
+    def going_south(self):
+        self.mutex.acquire()
+        self.cars_south.value += 1
+        self.mutex.release()
+        
+    def exiting_south(self):
+        self.mutex.acquire()
+        self.cars_south.value -= 1
+        self.mutex.release()
+        
+    def wants_enter(self, direction):
+        self.mutex.acquire()
+        if direction == NORTH:
+            self.stop.wait(self.cars_south == 0)
+            self.cars_north += 1
+        elif direction == SOUTH:
+            self.stop.wait(self.cars_north == 0)
+            self.cars_south += 1
+        self.mutex.release()
+            
+    def leaves_tunnel(self, direction):
+        self.mutex.acquire()
+        #print(self.cars_north.value, self.cars_south.value)
+        if direction == NORTH: 
+            self.cars_noth -= 1
+            self.stop.notify()
+        elif direction == SOUTH:
+            self.cars_south -= 1
+            self.stop.notify()
+        self.mutex.release()
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
