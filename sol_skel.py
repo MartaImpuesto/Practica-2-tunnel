@@ -16,27 +16,8 @@ class Monitor():
         self.cars_north = Value('i', 0)
         self.cars_south = Value('i', 0)
         self.mutex = Lock()
-        self.stop = Condition(self.mutex)
-        
-    def going_north(self):
-        self.mutex.acquire()
-        self.cars_north.value += 1
-        self.mutex.release()
-    
-    def exiting_north(self):
-        self.mutex.acquire()
-        self.cars_north.value -= 1
-        self.mutex.release()
-    
-    def going_south(self):
-        self.mutex.acquire()
-        self.cars_south.value += 1
-        self.mutex.release()
-        
-    def exiting_south(self):
-        self.mutex.acquire()
-        self.cars_south.value -= 1
-        self.mutex.release()
+        self.someone_north = Condition(self.mutex)
+        self.someone_south = Condition(self.mutex)
         
     def empty_direction_north(self):
         return self.cars_north.value == 0
@@ -47,12 +28,10 @@ class Monitor():
     def wants_enter(self, direction):
         self.mutex.acquire()
         if direction == NORTH:
-            self.stop.wait_for(self.empty_direction_north)
-            #self.going_north()
+            self.someone_south.wait_for(self.empty_direction_south)
             self.cars_north.value += 1
         elif direction == SOUTH:
-            self.stop.wait_for(self.empty_direction_south)
-            #self.going_south()
+            self.someone_north.wait_for(self.empty_direction_north)
             self.cars_south.value += 1
         self.mutex.release()
             
@@ -60,13 +39,11 @@ class Monitor():
         self.mutex.acquire()
         #print(self.cars_north.value, self.cars_south.value)
         if direction == NORTH: 
-            #self.exiting_north()
             self.cars_north.value -= 1
-            self.stop.notify_all()
+            self.someone_north.notify_all()
         elif direction == SOUTH:
-            #self.exiting_south()
             self.cars_south.value -= 1
-            self.stop.notify_all()
+            self.someone_south.notify_all()
         self.mutex.release()
         
         
