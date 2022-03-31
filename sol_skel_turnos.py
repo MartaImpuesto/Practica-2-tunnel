@@ -19,11 +19,14 @@ NORTH = "north"
 
 NCARS = 100
 
+PASSES = 5
+
 class Monitor():
     def __init__(self):
         self.cars_north = Value('i', 0)
         self.cars_south = Value('i', 0)
         self.turn = Value("i", 0)
+        self.allowed_passes = Value("i", 0)
         self.mutex = Lock()
         self.someone_north = Condition(self.mutex)
         self.someone_south = Condition(self.mutex)
@@ -39,11 +42,17 @@ class Monitor():
         if direction == NORTH:
             self.someone_south.wait_for(self.empty_direction_south)
             self.cars_north.value += 1
-            self.turn.value = 1
+            self.allowed_passes.value = (self.allowed_passes.value + 1)%PASSES
+            print("N", self.allowed_passes.value)
+            if self.allowed_passes.value == PASSES-1:
+                self.turn.value = 1
         elif direction == SOUTH:
             self.someone_north.wait_for(self.empty_direction_north)
             self.cars_south.value += 1
-            self.turn.value = 0
+            self.allowed_passes.value = (self.allowed_passes.value + 1)%PASSES
+            print("S", self.allowed_passes.value)
+            if self.allowed_passes.value == PASSES-1:
+                self.turn.value = 0
         print(self.cars_north.value, self.cars_south.value)
         self.mutex.release()
             
