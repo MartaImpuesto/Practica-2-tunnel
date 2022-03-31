@@ -6,8 +6,8 @@ import random
 from multiprocessing import Lock, Condition, Process
 from multiprocessing import Value
 
-SOUTH = "north"
-NORTH = "south"
+SOUTH = "south"
+NORTH = "north"
 
 NCARS = 100
 
