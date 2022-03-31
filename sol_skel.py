@@ -33,17 +33,18 @@ class Monitor():
         elif direction == SOUTH:
             self.someone_north.wait_for(self.empty_direction_north)
             self.cars_south.value += 1
+        print(self.cars_north.value, self.cars_south.value)
         self.mutex.release()
             
     def leaves_tunnel(self, direction):
         self.mutex.acquire()
-        #print(self.cars_north.value, self.cars_south.value)
         if direction == NORTH: 
             self.cars_north.value -= 1
             self.someone_north.notify_all()
         elif direction == SOUTH:
             self.cars_south.value -= 1
             self.someone_south.notify_all()
+        print(self.cars_north.value, self.cars_south.value)
         self.mutex.release()
         
         
