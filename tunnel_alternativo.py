@@ -16,8 +16,6 @@ from multiprocessing import Value
 SOUTH = "south"
 NORTH = "north"
 
-PASSES = 3
-
 NCARS = 100
 
 
