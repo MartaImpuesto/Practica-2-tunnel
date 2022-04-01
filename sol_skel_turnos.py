@@ -25,6 +25,8 @@ class Monitor():
     def __init__(self):
         self.cars_north = Value('i', 0)
         self.cars_south = Value('i', 0)
+        self.cars_north_waiting= Value ('i', 0)
+        self.cars_south_waiting= Value ('i', 0)
         self.turn = Value("i", 0)
         self.allowed_passes = Value("i", 0)
         self.mutex = Lock()
@@ -32,22 +34,32 @@ class Monitor():
         self.someone_south = Condition(self.mutex)
         
     def empty_direction_north(self):
-        return self.cars_north.value == 0 and self.turn.value == 1
+        return self.cars_north.value == 0 and (self.turn.value == 1 or self.cars_north_waiting.value == 0)
         
     def empty_direction_south(self):
-        return self.cars_south.value == 0 and self.turn.value == 0
+        return self.cars_south.value == 0 and (self.turn.value == 0 or self.cars_south_waiting.value == 0)
     
     def wants_enter(self, direction):
         self.mutex.acquire()
         if direction == NORTH:
+            self.cars_north_waiting.value += 1
             self.someone_south.wait_for(self.empty_direction_south)
+            if self.cars_south_waiting == 0:
+                self.turn.value = 0
+                self.allowed_passes.value = 0
+            self.cars_north_waiting.value -= 1
             self.cars_north.value += 1
             self.allowed_passes.value = (self.allowed_passes.value + 1)%PASSES
             print("N", self.allowed_passes.value)
             if self.allowed_passes.value == PASSES-1:
                 self.turn.value = 1
         elif direction == SOUTH:
+            self.cars_south_waiting.value += 1
             self.someone_north.wait_for(self.empty_direction_north)
+            if self.cars_north_waiting.value == 0:
+                self.turn.value = 1
+                self.allowed_passes.value = 0
+            self.cars_south_waiting.value -= 1
             self.cars_south.value += 1
             self.allowed_passes.value = (self.allowed_passes.value + 1)%PASSES
             print("S", self.allowed_passes.value)
