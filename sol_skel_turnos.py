@@ -43,11 +43,13 @@ class Monitor():
         self.mutex.acquire()
         if direction == NORTH:
             self.cars_north_waiting.value += 1
+            print("w", self.cars_north_waiting.value, self.cars_south_waiting.value)
             self.someone_south.wait_for(self.empty_direction_south)
-            if self.cars_south_waiting == 0:
+            if self.cars_south_waiting.value == 0:
                 self.turn.value = 0
                 self.allowed_passes.value = 0
             self.cars_north_waiting.value -= 1
+            print("w", self.cars_north_waiting.value, self.cars_south_waiting.value)
             self.cars_north.value += 1
             self.allowed_passes.value = (self.allowed_passes.value + 1)%PASSES
             print("N", self.allowed_passes.value)
@@ -55,11 +57,13 @@ class Monitor():
                 self.turn.value = 1
         elif direction == SOUTH:
             self.cars_south_waiting.value += 1
+            print("w", self.cars_north_waiting.value, self.cars_south_waiting.value)
             self.someone_north.wait_for(self.empty_direction_north)
             if self.cars_north_waiting.value == 0:
                 self.turn.value = 1
                 self.allowed_passes.value = 0
             self.cars_south_waiting.value -= 1
+            print("w", self.cars_north_waiting.value, self.cars_south_waiting.value)
             self.cars_south.value += 1
             self.allowed_passes.value = (self.allowed_passes.value + 1)%PASSES
             print("S", self.allowed_passes.value)
