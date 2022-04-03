@@ -39,12 +39,12 @@ class Monitor():
         self.someone_north = Condition(self.mutex) # Condición para ver si algún coche esta yendo hacia el norte en el tunel
         self.someone_south = Condition(self.mutex) # Condición para ver si algún coche esta yendo hacia el sur en el tunel
     
-    # Si un coche quiere entrar el tunel hacia el norte, se espera a que no haya ninguno dentro yendo hacia el sur. 
+    # Si un coche quiere entrar el tunel hacia el sur, se espera a que no haya ninguno dentro yendo hacia el norte. 
     # Además espera a que sea su turno o no hayan coches esperando a entrar en sentido contrario, en cuyo caso toma el turno.
     def empty_direction_north(self):
         return self.cars_north.value == 0 and (self.turn.value == 1 or self.cars_north_waiting.value == 0)
     
-    # Si un coche quiere entrar el tunel hacia el sur, se espera a que no haya ninguno dentro yendo hacia el norte. 
+    # Si un coche quiere entrar el tunel hacia el norte, se espera a que no haya ninguno dentro yendo hacia el sur. 
     # Además espera a que sea su turno o no hayan coches esperando a entrar en sentido contrario, en cuyo caso toma el turno.    
     def empty_direction_south(self):
         return self.cars_south.value == 0 and (self.turn.value == 0 or self.cars_south_waiting.value == 0)
