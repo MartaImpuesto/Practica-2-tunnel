@@ -41,10 +41,11 @@ class Monitor():
         return self.cars_north.value == 0 and (self.turn.value == 1 or self.cars_north_waiting.value == 0)
         
     def empty_direction_south(self):
-        #Snálogo al anterior con los coches en dirección sur
+        #Análogo al anterior con los coches en dirección sur
         return self.cars_south.value == 0 and (self.turn.value == 0 or self.cars_south_waiting.value == 0)
     
     def wants_enter(self, direction):
+        #Para evitar el proble ma de la inanición hemos decidido dar turnos de N en N, empezando por los coches del norte. Es decir, si hay w(3,5) de coches esperando, pasarán los 3 del norte y a continuación los 5 del sur en caso de que N valga por ejemplo 5.
         self.mutex.acquire()
         if direction == NORTH:
             self.cars_north_waiting.value += 1
