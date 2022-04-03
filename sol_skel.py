@@ -16,12 +16,13 @@ NORTH = "north"
 
 NCARS = 100
 
+# Quítese comentarios a los print para comprobar que funciona más fácilmente.
 class Monitor():
     def __init__(self):
         self.cars_north = Value('i', 0) # Número de coches yendo hacia el norte en el tunel
         self.cars_south = Value('i', 0) # Número de coches yendo hacia el sur en el tunel
         self.mutex = Lock()
-        # NOTA: Los dos siguientes condition se podrían dejar como uno solo.
+        # NOTA: Los dos siguientes condition se podrían fusionar como uno solo.
         self.someone_north = Condition(self.mutex) # Condición para ver si algún coche esta yendo hacia el norte en el tunel
         self.someone_south = Condition(self.mutex) # Condición para ver si algún coche esta yendo hacia el sur en el tunel
         
@@ -39,7 +40,7 @@ class Monitor():
         elif direction == SOUTH:
             self.someone_north.wait_for(self.empty_direction_north) # Si un coche quiere entrar el tunel hacia el sur, se espera a que no haya ninguno dentro yendo hacia el norte
             self.cars_south.value += 1
-        print(self.cars_north.value, self.cars_south.value)
+        #print(self.cars_north.value, self.cars_south.value)
         self.mutex.release()
             
     def leaves_tunnel(self, direction):
@@ -50,7 +51,7 @@ class Monitor():
         elif direction == SOUTH:
             self.cars_south.value -= 1
             self.someone_south.notify_all()
-        print(self.cars_north.value, self.cars_south.value)
+        #print(self.cars_north.value, self.cars_south.value)
         self.mutex.release()
         
         

@@ -14,6 +14,7 @@ NORTH = "north"
 
 NCARS = 100
 
+# Quítese comentarios a los print para comprobar que funciona más fácilmente.
 class Monitor():
     def __init__(self):
         self.cars_north = Value('i', 0) # Número de coches yendo hacia el norte en el tunel
@@ -21,7 +22,7 @@ class Monitor():
         self.cars_north_waiting= Value ('i', 0) # Número de coches esperando para ir hacia el norte en el tunel
         self.cars_south_waiting= Value ('i', 0) # Número de coches esperando para ir hacia el sur en el tunel
         self.mutex = Lock()
-        # NOTA: Los dos siguientes condition se podrían dejar como uno solo.
+        # NOTA: Los dos siguientes condition se podrían fusionar como uno solo.
         self.someone_north = Condition(self.mutex) # Condición para ver si algún coche esta yendo hacia el norte en el tunel
         self.someone_south = Condition(self.mutex) # Condición para ver si algún coche esta yendo hacia el sur en el tunel
     
@@ -39,31 +40,31 @@ class Monitor():
         self.mutex.acquire()
         if direction == NORTH:
             self.cars_north_waiting.value += 1
-            print("w", self.cars_north_waiting.value, self.cars_south_waiting.value)
+            #print("w", self.cars_north_waiting.value, self.cars_south_waiting.value)
             self.someone_south.wait_for(self.empty_direction_south)
             self.cars_north.value += 1
             self.cars_north_waiting.value -= 1
-            print("w", self.cars_north_waiting.value, self.cars_south_waiting.value)            
+            #print("w", self.cars_north_waiting.value, self.cars_south_waiting.value)            
         elif direction == SOUTH:
             self.cars_south_waiting.value += 1
-            print("w", self.cars_north_waiting.value, self.cars_south_waiting.value)
+            #print("w", self.cars_north_waiting.value, self.cars_south_waiting.value)
             self.someone_north.wait_for(self.empty_direction_north)
             self.cars_south.value += 1
             self.cars_south_waiting.value -= 1
-            print("w", self.cars_north_waiting.value, self.cars_south_waiting.value)
-        print(self.cars_north.value, self.cars_south.value)
+            #print("w", self.cars_north_waiting.value, self.cars_south_waiting.value)
+        #print(self.cars_north.value, self.cars_south.value)
         self.mutex.release()
             
     def leaves_tunnel(self, direction):
         self.mutex.acquire()
-        print(self.cars_north.value, self.cars_south.value)
+        #print(self.cars_north.value, self.cars_south.value)
         if direction == NORTH: 
             self.cars_north.value -= 1
             self.someone_north.notify_all()
         elif direction == SOUTH:
             self.cars_south.value -= 1
             self.someone_south.notify_all()
-        print(self.cars_north.value, self.cars_south.value)
+        #print(self.cars_north.value, self.cars_south.value)
         self.mutex.release()
         
         
