@@ -25,18 +25,23 @@ class Monitor():
     def __init__(self):
         self.cars_north = Value('i', 0)
         self.cars_south = Value('i', 0)
+        #esperan para entrar
         self.cars_north_waiting= Value ('i', 0)
         self.cars_south_waiting= Value ('i', 0)
+        #turno 0 para la dirección norte y 1 para la dirección sur
         self.turn = Value("i", 0)
         self.allowed_passes = Value("i", 0)
+        #bloqueo
         self.mutex = Lock()
         self.someone_north = Condition(self.mutex)
         self.someone_south = Condition(self.mutex)
         
     def empty_direction_north(self):
+        #Dirección norte sin coches, con turno para dirección sur y sin cola de coches en el norte
         return self.cars_north.value == 0 and (self.turn.value == 1 or self.cars_north_waiting.value == 0)
         
     def empty_direction_south(self):
+        #Snálogo al anterior con los coches en dirección sur
         return self.cars_south.value == 0 and (self.turn.value == 0 or self.cars_south_waiting.value == 0)
     
     def wants_enter(self, direction):
