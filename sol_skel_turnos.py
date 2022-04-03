@@ -35,6 +35,7 @@ class Monitor():
         self.turn = Value("i", 0) # Turno. 0 si le toca pasar a los del norte, 1 si le toa a los del sur
         self.allowed_passes = Value("i", 0) # Contador para ver cúantos coches han pasado
         self.mutex = Lock()
+        # NOTA: Los dos siguientes condition se podrían dejar como uno solo.
         self.someone_north = Condition(self.mutex) # Condición para ver si algún coche esta yendo hacia el norte en el tunel
         self.someone_south = Condition(self.mutex) # Condición para ver si algún coche esta yendo hacia el sur en el tunel
     
