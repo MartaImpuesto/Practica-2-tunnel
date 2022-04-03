@@ -9,6 +9,11 @@ Created on Thu Mar 31 17:58:52 2022
 """
 Solution to the one-way tunnel
 """
+
+"""
+SOLUCIÓN USANDO TURNOS
+"""
+
 import time
 import random
 from multiprocessing import Lock, Condition, Process
@@ -19,23 +24,27 @@ NORTH = "north"
 
 NCARS = 100
 
-PASSES = 5
+PASSES = 5 # Máximo número de pasos consecutivos de un lado mientras que hay algún coche esperando en el lado contrario
 
 class Monitor():
     def __init__(self):
-        self.cars_north = Value('i', 0)
-        self.cars_south = Value('i', 0)
-        self.cars_north_waiting= Value ('i', 0)
-        self.cars_south_waiting= Value ('i', 0)
-        self.turn = Value("i", 0)
-        self.allowed_passes = Value("i", 0)
+        self.cars_north = Value('i', 0) # Número de coches yendo hacia el norte en el tunel
+        self.cars_south = Value('i', 0) # Número de coches yendo hacia el sur en el tunel
+        self.cars_north_waiting= Value ('i', 0) # Número de coches esperando para ir hacia el norte en el tunel
+        self.cars_south_waiting= Value ('i', 0) # Número de coches esperando para ir hacia el sur en el tunel
+        self.turn = Value("i", 0) # Turno. 0 si le toca pasar a los del norte, 1 si le toa a los del sur
+        self.allowed_passes = Value("i", 0) # Contador para ver cúantos coches han pasado
         self.mutex = Lock()
-        self.someone_north = Condition(self.mutex)
-        self.someone_south = Condition(self.mutex)
-        
+        self.someone_north = Condition(self.mutex) # Condición para ver si algún coche esta yendo hacia el norte en el tunel
+        self.someone_south = Condition(self.mutex) # Condición para ver si algún coche esta yendo hacia el sur en el tunel
+    
+    # Si un coche quiere entrar el tunel hacia el norte, se espera a que no haya ninguno dentro yendo hacia el sur. 
+    # Además espera a que sea su turno o no hayan coches esperando a entrar en sentido contrario, en cuyo caso toma el turno.
     def empty_direction_north(self):
         return self.cars_north.value == 0 and (self.turn.value == 1 or self.cars_north_waiting.value == 0)
-        
+    
+    # Si un coche quiere entrar el tunel hacia el sur, se espera a que no haya ninguno dentro yendo hacia el norte. 
+    # Además espera a que sea su turno o no hayan coches esperando a entrar en sentido contrario, en cuyo caso toma el turno.    
     def empty_direction_south(self):
         return self.cars_south.value == 0 and (self.turn.value == 0 or self.cars_south_waiting.value == 0)
     
@@ -45,13 +54,13 @@ class Monitor():
             self.cars_north_waiting.value += 1
             print("w", self.cars_north_waiting.value, self.cars_south_waiting.value)
             self.someone_south.wait_for(self.empty_direction_south)
-            if self.cars_south_waiting.value == 0:
-                self.turn.value = 0
-                self.allowed_passes.value = 0
             self.cars_north_waiting.value -= 1
             print("w", self.cars_north_waiting.value, self.cars_south_waiting.value)
             self.cars_north.value += 1
             self.allowed_passes.value = (self.allowed_passes.value + 1)%PASSES
+            if self.cars_south_waiting.value == 0: # Si no hay coches que quieren pasar en sentido contrario, toma el turno para su lado
+                self.turn.value = 0
+                self.allowed_passes.value = 0
             print("N", self.allowed_passes.value)
             if self.allowed_passes.value == PASSES-1:
                 self.turn.value = 1
@@ -59,13 +68,13 @@ class Monitor():
             self.cars_south_waiting.value += 1
             print("w", self.cars_north_waiting.value, self.cars_south_waiting.value)
             self.someone_north.wait_for(self.empty_direction_north)
-            if self.cars_north_waiting.value == 0:
-                self.turn.value = 1
-                self.allowed_passes.value = 0
             self.cars_south_waiting.value -= 1
             print("w", self.cars_north_waiting.value, self.cars_south_waiting.value)
             self.cars_south.value += 1
             self.allowed_passes.value = (self.allowed_passes.value + 1)%PASSES
+            if self.cars_north_waiting.value == 0: # Si no hay coches que quieren pasar en sentido contrario, toma el turno para su lado
+                self.turn.value = 1
+                self.allowed_passes.value = 0
             print("S", self.allowed_passes.value)
             if self.allowed_passes.value == PASSES-1:
                 self.turn.value = 0
@@ -104,7 +113,7 @@ def main():
     monitor = Monitor()
     cid = 0
     for _ in range(NCARS):
-        direction = NORTH if random.randint(0,1)==1  else SOUTH
+        direction = NORTH if random.randint(0,7)==1  else SOUTH # Cambiado 1 por 7 para comprobar que no hay inanición incluso cuando pasan muchos más del sur que del norte
         cid += 1
         p = Process(target=car, args=(cid, direction, monitor))
         p.start()

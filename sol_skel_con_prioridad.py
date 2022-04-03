@@ -16,10 +16,10 @@ NCARS = 100
 
 class Monitor():
     def __init__(self):
-        self.cars_north = Value('i', 0)
-        self.cars_south = Value('i', 0)
-        self.cars_north_waiting= Value ('i', 0)
-        self.cars_south_waiting= Value ('i', 0)
+        self.cars_north = Value('i', 0) # Número de coches yendo hacia el norte en el tunel
+        self.cars_south = Value('i', 0) # Número de coches yendo hacia el sur en el tunel
+        self.cars_north_waiting= Value ('i', 0) # Número de coches esperando para ir hacia el norte en el tunel
+        self.cars_south_waiting= Value ('i', 0) # Número de coches esperando para ir hacia el sur en el tunel
         self.mutex = Lock()
         self.someone_north = Condition(self.mutex)
         self.someone_south = Condition(self.mutex)

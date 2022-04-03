@@ -1,6 +1,11 @@
 """
 Solution to the one-way tunnel
 """
+
+"""
+SOLUCIÓN BÁSICA
+"""
+
 import time
 import random
 from multiprocessing import Lock, Condition, Process
@@ -13,11 +18,11 @@ NCARS = 100
 
 class Monitor():
     def __init__(self):
-        self.cars_north = Value('i', 0)
-        self.cars_south = Value('i', 0)
+        self.cars_north = Value('i', 0) # Número de coches yendo hacia el norte en el tunel
+        self.cars_south = Value('i', 0) # Número de coches yendo hacia el sur en el tunel
         self.mutex = Lock()
-        self.someone_north = Condition(self.mutex)
-        self.someone_south = Condition(self.mutex)
+        self.someone_north = Condition(self.mutex) # Condición para ver si algún coche esta yendo hacia el norte en el tunel
+        self.someone_south = Condition(self.mutex) # Condición para ver si algún coche esta yendo hacia el sur en el tunel
         
     def empty_direction_north(self):
         return self.cars_north.value == 0
@@ -28,10 +33,10 @@ class Monitor():
     def wants_enter(self, direction):
         self.mutex.acquire()
         if direction == NORTH:
-            self.someone_south.wait_for(self.empty_direction_south)
+            self.someone_south.wait_for(self.empty_direction_south) # Si un coche quiere entrar el tunel hacia el norte, se espera a que no haya ninguno dentro yendo hacia el sur
             self.cars_north.value += 1
         elif direction == SOUTH:
-            self.someone_north.wait_for(self.empty_direction_north)
+            self.someone_north.wait_for(self.empty_direction_north) # Si un coche quiere entrar el tunel hacia el sur, se espera a que no haya ninguno dentro yendo hacia el norte
             self.cars_south.value += 1
         print(self.cars_north.value, self.cars_south.value)
         self.mutex.release()
